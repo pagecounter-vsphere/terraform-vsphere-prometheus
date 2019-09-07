@@ -3,35 +3,36 @@ locals {
 }
 
 data "vsphere_virtual_machine" "template" {
-  datacenter_id = "${var.vsphere_datacenter_id}"
-  name          = "${var.template}"
+  datacenter_id = var.vsphere_datacenter_id
+  name          = var.template
 }
 
 resource "vsphere_virtual_machine" "prometheus-vm" {
-  name   = "${local.server_name}"
-  folder = "${var.folder}"
+  name   = local.server_name
+  folder = var.folder
 
-  resource_pool_id = "${var.resource_pool_id}"
-  datastore_id     = "${var.datastore_id}"
+  resource_pool_id = var.resource_pool_id
+  datastore_id     = var.datastore_id
   num_cpus         = 1
   memory           = 512
-  guest_id         = "${data.vsphere_virtual_machine.template.guest_id}"
-  scsi_type        = "${data.vsphere_virtual_machine.template.scsi_type}"
+  guest_id         = data.vsphere_virtual_machine.template.guest_id
+  scsi_type        = data.vsphere_virtual_machine.template.scsi_type
 
   clone {
-    template_uuid = "${data.vsphere_virtual_machine.template.id}"
+    template_uuid = data.vsphere_virtual_machine.template.id
     linked_clone  = true
 
     customize {
       linux_options {
-        host_name = "${local.server_name}"
+        host_name = local.server_name
         domain    = "${var.sub}.${var.domain}"
       }
-      network_interface {}
-
+      network_interface {
+      }
     }
   }
 
+  # https://www.terraform.io/docs/provisioners/connection.html#example-usage
   # https://www.terraform.io/docs/provisioners/connection.html#example-usage
   connection {
     type     = "ssh"
@@ -44,14 +45,15 @@ resource "vsphere_virtual_machine" "prometheus-vm" {
     label            = "disk0"
     eagerly_scrub    = false
     thin_provisioned = true
-    size             = "${data.vsphere_virtual_machine.template.disks.0.size}"
+    size             = data.vsphere_virtual_machine.template.disks[0].size
   }
 
   network_interface {
-    adapter_type = "${data.vsphere_virtual_machine.template.network_interface_types.0}"
-    network_id   = "${var.network_id}"
+    adapter_type = data.vsphere_virtual_machine.template.network_interface_types[0]
+    network_id   = var.network_id
   }
 
+  # https://www.terraform.io/docs/provisioners/remote-exec.html#example-usage
   # https://www.terraform.io/docs/provisioners/remote-exec.html#example-usage
   provisioner "remote-exec" {
     inline = [
@@ -71,9 +73,10 @@ resource "vsphere_virtual_machine" "prometheus-vm" {
 }
 
 output "guest_ip_address" {
-  value = "${vsphere_virtual_machine.prometheus-vm.guest_ip_addresses[0]}"
+  value = vsphere_virtual_machine.prometheus-vm.guest_ip_addresses[0]
 }
 
 output "name" {
-  value = "${local.server_name}"
+  value = local.server_name
 }
+
