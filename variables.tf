@@ -33,3 +33,6 @@ variable "consul_lan_join" {
   default = ""
 }
 
+variable "github_user" {
+}
+
