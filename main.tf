@@ -57,7 +57,7 @@ resource "vsphere_virtual_machine" "prometheus-vm" {
       "GITHUB_USER=kikitux bash /tmp/public_keys.sh",
       "export DC=${var.dc}",
       "export IFACE=${var.iface}",
-      "export LAN_JOIN=${var.consul_lan_join}",
+      "export LAN_JOIN='${var.consul_lan_join}'",
       "curl -sLo /tmp/consul.sh https://raw.githubusercontent.com/kikitux/curl-bash/master/consul-client/consul.sh",
       "sudo -E bash /tmp/consul.sh",
       "curl -sLo /tmp/prometheus.sh https://raw.githubusercontent.com/kikitux/curl-bash/master/provision/prometheus.sh",
