@@ -8,9 +8,8 @@ data "vsphere_virtual_machine" "template" {
 }
 
 resource "vsphere_virtual_machine" "prometheus-vm" {
-  name   = local.server_name
-  folder = var.folder
-
+  name             = local.server_name
+  folder           = var.folder
   resource_pool_id = var.resource_pool_id
   datastore_id     = var.datastore_id
   num_cpus         = 1
@@ -21,7 +20,6 @@ resource "vsphere_virtual_machine" "prometheus-vm" {
   clone {
     template_uuid = data.vsphere_virtual_machine.template.id
     linked_clone  = true
-
     customize {
       linux_options {
         host_name = local.server_name
@@ -33,10 +31,9 @@ resource "vsphere_virtual_machine" "prometheus-vm" {
   }
 
   # https://www.terraform.io/docs/provisioners/connection.html#example-usage
-  # https://www.terraform.io/docs/provisioners/connection.html#example-usage
   connection {
+    host     = self.default_ip_address
     type     = "ssh"
-    host     = self.guest_ip_addresses[0]
     user     = "ubuntu"
     password = "ubuntu"
   }
@@ -53,7 +50,6 @@ resource "vsphere_virtual_machine" "prometheus-vm" {
     network_id   = var.network_id
   }
 
-  # https://www.terraform.io/docs/provisioners/remote-exec.html#example-usage
   # https://www.terraform.io/docs/provisioners/remote-exec.html#example-usage
   provisioner "remote-exec" {
     inline = [
